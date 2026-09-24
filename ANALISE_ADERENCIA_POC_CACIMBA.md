@@ -420,9 +420,8 @@ Também devem ser preparados os três canais de suporte solicitados para a POC: 
 
 ### Fase 0 — Base executável e inventário oficial
 
-- Configurar banco, Firebase e armazenamento para a instância de Cacimba.
-- Criar configuração de ambiente sem reutilizar segredos de Divino.
-- Executar migrations e validar build/testes.
+- Validar o armazenamento Blob da instância de Cacimba.
+- Corrigir e validar a suíte de testes automatizados.
 - Confirmar o texto oficial do edital e transformar cada item em caso de aceite.
 - Identificar e parametrizar todas as referências fixas de Divino.
 
