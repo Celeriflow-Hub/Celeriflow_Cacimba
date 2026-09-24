@@ -1,0 +1,21 @@
+import { getTenantContextForModule } from "@/lib/platform/tenant-context";
+
+export const dynamic = "force-dynamic";
+
+function escape(value: unknown) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { prisma } = await getTenantContextForModule("TRIBUTACAO");
+  const guide = await prisma.taxGuide.findUnique({ where: { id }, include: { assessment: { include: { tax: true, taxpayer: { include: { person: true, company: true } } } }, payments: { where: { status: "Confirmado" }, orderBy: { paymentDate: "asc" } } } });
+  if (!guide) return new Response("DAM não encontrado.", { status: 404 });
+  const charge = await prisma.taxIntegrationEvent.findFirst({ where: { integrationCode: "PIX_ADAPTER", payload: { path: ["guideId"], equals: guide.id } }, orderBy: { createdAt: "desc" } });
+  const total = Number(guide.totalValueDecimal ?? guide.totalValue);
+  const paid = guide.payments.reduce((sum, payment) => sum + Number(payment.amountPaidDecimal ?? payment.amountPaid), 0);
+  const taxpayer = guide.assessment.taxpayer.company?.corporateName ?? guide.assessment.taxpayer.person?.fullName ?? "Contribuinte";
+  const result = charge?.result && typeof charge.result === "object" && !Array.isArray(charge.result) ? charge.result as Record<string, unknown> : {};
+  const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>DAM ${escape(guide.guideNumber)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}.sheet{max-width:820px;margin:auto;border:1px solid #cbd5e1;padding:24px}h1{font-size:22px;margin:0 0 4px}.muted{color:#64748b;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}.field{border-bottom:1px solid #e2e8f0;padding:8px 0}.field b{display:block;font-size:10px;text-transform:uppercase;color:#64748b}.values{width:100%;border-collapse:collapse}.values td,.values th{border:1px solid #cbd5e1;padding:8px;text-align:right}.values td:first-child,.values th:first-child{text-align:left}.status{margin-top:16px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0}.actions{margin:16px auto;max-width:820px;text-align:right}@media print{.actions{display:none}.sheet{border:0}}</style></head><body><div class="actions"><button onclick="window.print()">Imprimir</button></div><main class="sheet"><h1>Documento de Arrecadação Municipal</h1><div class="muted">Identificador ${escape(guide.guideNumber ?? guide.id)}</div><div class="grid"><div class="field"><b>Contribuinte</b>${escape(taxpayer)}</div><div class="field"><b>Tributo</b>${escape(guide.assessment.tax.name)}</div><div class="field"><b>Origem</b>${escape(guide.assessment.assessmentNumber ?? guide.assessment.id)}</div><div class="field"><b>Competência/exercício</b>${escape(guide.assessment.competence?.toLocaleDateString("pt-BR") ?? guide.assessment.year)}</div><div class="field"><b>Vencimento</b>${escape(guide.dueDate.toLocaleDateString("pt-BR"))}</div><div class="field"><b>Situação</b>${escape(guide.status)}</div></div><table class="values"><tr><th>Componente</th><th>Valor</th></tr><tr><td>Principal e acréscimos do documento</td><td>${total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td></tr><tr><td>Pagamentos confirmados</td><td>${paid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td></tr><tr><td><b>Saldo do documento</b></td><td><b>${Math.max(total-paid,0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b></td></tr></table>${guide.barcode ? `<div class="status"><b>Código:</b> ${escape(guide.barcode)}</div>` : ""}${result.copyAndPaste ? `<div class="status"><b>Referência de cobrança:</b> ${escape(result.copyAndPaste)}<br><span class="muted">A cobrança permanece aguardando confirmação até o processamento do retorno.</span></div>` : ""}<div class="status">A emissão deste documento não representa pagamento. A quitação depende de retorno confirmado e apropriado.</div></main></body></html>`;
+  return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "content-disposition": `inline; filename="DAM-${guide.guideNumber ?? guide.id}.html"` } });
+}

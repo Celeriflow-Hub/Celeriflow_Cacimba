@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getTenantContextForModule, isSystemAdministrator, canViewModule } from "@/lib/platform/tenant-context";
+import { PageFrame } from "@/components/app-ui/PageFrame";
+import { PageHeader } from "@/components/app-ui/PageHeader";
+export default async function StockMovementOrigin({ params }: { params: Promise<{ id: string }> }) {
+  const context = await getTenantContextForModule("PATRIMONIO"), { id } = await params;
+  if (!isSystemAdministrator(context.user) && !context.user.departmentId) notFound();
+  const m = await context.prisma.materialMovement.findFirst({ where: { id, ...(isSystemAdministrator(context.user) ? {} : { OR: [{ departmentId: context.user.departmentId }, { fleetConsumption: { unit: { departmentId: context.user.departmentId } } }] }) }, include: { material: true, warehouse: { select: { name: true } }, department: { select: { name: true } }, fleetConsumption: { select: { id: true, unitId: true, unit: { select: { code: true, departmentId: true } } } } } });
+  if (!m) notFound();
+  return <PageFrame className="space-y-3"><PageHeader title="Movimento de material · Almoxarifado" action={<Link href="/patrimonio/materiais" className="rounded border bg-white px-3 py-2 text-sm">Materiais</Link>} /><dl className="grid gap-4 rounded-md border bg-white p-4 text-sm sm:grid-cols-2">{Object.entries({ "Identificação": m.id, "Tipo": m.type, "Material": `${m.material.code} · ${m.material.name}`, "Quantidade": `${m.quantity} ${m.material.unitOfMeasure}`, "Custo unitário": m.unitValue == null ? "Não informado" : m.unitValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), "Data da movimentação": m.date.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), "Almoxarifado": m.warehouse.name, "Setor destinatário": m.department?.name || "Sem setor", "Motivo": m.reason || "—" }).map(([key, value]) => <div key={key}><dt className="text-xs text-slate-500">{key}</dt><dd className="mt-1 break-words">{value}</dd></div>)}</dl>{m.fleetConsumption && canViewModule(context.user, "FROTAS") && (isSystemAdministrator(context.user) || m.fleetConsumption.unit.departmentId === context.user.departmentId) && <Link href={`/frotas?area=consumos&unitId=${encodeURIComponent(m.fleetConsumption.unitId)}`} className="block rounded border border-teal-200 bg-teal-50 p-3 text-sm text-teal-900">Abrir consumo apropriado em Frotas · {m.fleetConsumption.unit.code}</Link>}</PageFrame>;
+}

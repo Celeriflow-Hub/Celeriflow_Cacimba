@@ -1,0 +1,18 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { getTenantContextForModuleOperation } from "@/lib/platform/tenant-context";
+import { createCemetery, createGrave, createSector, enrollCemeteryFeeInDebt, grantConcession, issueCemeteryFee, registerDeceased, registerEmployee, registerFuneralHome, registerMovement } from "@/lib/tributacao/s9-service";
+const path = "/tributacao/cemiterios";
+const done = (error?: unknown) => ({ error: error instanceof Error ? error.message : error ? "Não foi possível concluir a operação." : undefined });
+async function ctx(operation: "create" | "update") { return getTenantContextForModuleOperation("TRIBUTACAO", operation); }
+const actor = (c: Awaited<ReturnType<typeof ctx>>) => ({ usuarioId: c.user.id });
+export async function createCemeteryAction(input: Parameters<typeof createCemetery>[1]) { try { const c = await ctx("create"); await createCemetery(c.prisma, input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function createSectorAction(input: Parameters<typeof createSector>[1]) { try { const c = await ctx("create"); await createSector(c.prisma, input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function createGraveAction(input: Parameters<typeof createGrave>[1]) { try { const c = await ctx("create"); await createGrave(c.prisma, input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function registerEmployeeAction(input: Parameters<typeof registerEmployee>[1]) { try { const c = await ctx("create"); await registerEmployee(c.prisma, input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function registerFuneralHomeAction(input: Parameters<typeof registerFuneralHome>[1]) { try { const c = await ctx("create"); await registerFuneralHome(c.prisma, input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function registerDeceasedAction(input: Omit<Parameters<typeof registerDeceased>[2], "deathDate" | "birthDate"> & { deathDate: string; birthDate?: string }) { try { const c = await ctx("create"); await registerDeceased(c.prisma, actor(c), { ...input, deathDate: new Date(input.deathDate), birthDate: input.birthDate ? new Date(input.birthDate) : undefined }); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function registerMovementAction(input: Parameters<typeof registerMovement>[2]) { try { const c = await ctx("create"); await registerMovement(c.prisma, actor(c), input); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function grantConcessionAction(input: Omit<Parameters<typeof grantConcession>[2], "endsAt"> & { endsAt?: string }) { try { const c = await ctx("create"); await grantConcession(c.prisma, actor(c), { ...input, endsAt: input.endsAt ? new Date(input.endsAt) : undefined }); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function issueCemeteryFeeAction(input: { taxpayerId: string; amount: number; dueDate: string; movementId?: string; concessionId?: string }) { try { const c = await ctx("create"); await issueCemeteryFee(c.prisma, actor(c), { taxpayerId: input.taxpayerId, amount: input.amount, dueDate: new Date(input.dueDate), movementId: input.movementId || undefined, concessionId: input.concessionId || undefined }); revalidatePath(path); return done(); } catch (e) { return done(e); } }
+export async function enrollCemeteryFeeInDebtAction(assessmentId: string) { try { const c = await ctx("create"); await enrollCemeteryFeeInDebt(c.prisma, actor(c), assessmentId); revalidatePath(path); return done(); } catch (e) { return done(e); } }

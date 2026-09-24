@@ -1,0 +1,7 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { buildExclusionExport, calculateSimplesCrossCheck, classifySimplesDivergences } from "../s5-engine";
+test("cruza NFS-e 10.000 com declaração 9.000", () => { const result = calculateSimplesCrossCheck({ nfseService: 10_000, declaredService: 9_000, municipalIssDeclared: 300, daf607Confirmed: 250, nationalDasTotal: 1_200 }); assert.equal(result.revenueDifference.toFixed(2), "1000.00"); assert.equal(result.paymentDifference.toFixed(2), "50.00"); });
+test("não usa o DAS nacional como ISS municipal", () => { const result = calculateSimplesCrossCheck({ nfseService: 10_000, declaredService: 9_000, municipalIssDeclared: 300, daf607Confirmed: 250, nationalDasTotal: 9_999 }); assert.equal(result.paymentBasis, "MUNICIPAL_COMPONENT"); assert.equal(result.paymentDifference.toFixed(2), "50.00"); });
+test("classifica as malhas necessárias", () => { assert.deepEqual(classifySimplesDivergences({ expected: true, nfseService: 10000, declaredService: 9000, revenueDifference: 1000, municipalIssDeclared: 300, paymentDifference: 50, declaredRate: 2.5, expectedRate: 3, activityCode: "01.01", isEstimate: true }), ["NFSE_X_DECLARACAO", "PAGAMENTO", "ALIQUOTA", "ESTIMATIVA"]); });
+test("arquivo de exclusão é explicitamente interno", () => { assert.match(buildExclusionExport({ taxpayerDocument: "12.345.678/0001-90", competence: "09/2026", reason: "Excesso", calendarRevenue: "6000000.00", legalLimit: "4800000.00" }), /^CELERIFLOW_SN_EXCLUSAO_INTERNA_V1\|/); });

@@ -1,0 +1,2 @@
+ALTER TABLE "AccountingPostingRule"
+  ADD COLUMN IF NOT EXISTS "isReference" BOOLEAN NOT NULL DEFAULT false;

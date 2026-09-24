@@ -1,0 +1,58 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/tools/siafic-demo-receiver/node_modules/
+/tools/siafic-demo-receiver/data/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+.agent/
+docs/doc_extracted/
+docs/doc.zip
+
+/src/generated/prisma
+/src/generated/platform-prisma
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!components.json
+
+.vercel
+.env*

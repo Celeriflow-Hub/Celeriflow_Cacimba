@@ -1,0 +1,87 @@
+/* Theme the legacy form controls inside RH without changing other modules. */
+.workspace {
+  color: var(--color-slate-800);
+}
+
+.workspace header > div:last-child {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.workspace [data-rh-list-body] > div {
+  height: 100%;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.workspace [data-rh-list-body] table {
+  height: 100%;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.workspace [data-rh-list-body] thead {
+  height: 1.5rem;
+}
+
+.workspace [data-rh-list-body] th {
+  padding: 0.125rem 0.5rem;
+  line-height: 1;
+}
+
+.workspace [data-rh-list-body] tbody tr {
+  height: clamp(1.25rem, 2.5dvh, 1.65rem);
+}
+
+.workspace [data-rh-list-body] td {
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+.workspace [data-rh-list-body] [data-slot="button"] {
+  height: 1.25rem;
+  min-height: 1.25rem;
+  padding: 0 0.375rem;
+  border-radius: 0.25rem;
+}
+
+.workspace [data-rh-list-body] [data-slot="button"] svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+:global(.dark) .workspace {
+  color-scheme: dark;
+  color: var(--color-slate-200);
+}
+
+:global(.dark) .workspace :is([class~="bg-white"], [class~="bg-slate-50"]) {
+  background-color: var(--color-slate-900);
+}
+
+:global(.dark) .workspace :is([class~="text-slate-600"], [class~="text-slate-700"], [class~="text-slate-800"], [class~="text-slate-900"]) {
+  color: var(--color-slate-200);
+}
+
+:global(.dark) .workspace :is([class~="border-slate-100"], [class~="border-slate-200"], [class~="border-slate-300"]) {
+  border-color: var(--color-slate-700);
+}
+
+:global(.dark) .workspace :is([class~="hover:bg-slate-50"], [class~="hover:bg-slate-100"]):hover {
+  background-color: var(--color-slate-800);
+}
+
+:global(.dark) .workspace [class~="text-emerald-800"] {
+  color: var(--color-emerald-300);
+}
+
+:global(.dark) .workspace :is([class~="bg-emerald-50"], [class~="bg-emerald-50/40"]) {
+  background-color: var(--color-emerald-950);
+}
+
+:global(.dark) .workspace [class~="hover:bg-slate-50"]:hover {
+  color: var(--color-slate-100);
+}
+

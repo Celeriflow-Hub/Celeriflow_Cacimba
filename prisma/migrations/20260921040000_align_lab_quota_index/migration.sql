@@ -1,0 +1,1 @@
+ALTER INDEX "HealthLabProviderQuota_providerSupplierId_unitId_examModelId_pe" RENAME TO "HealthLabProviderQuota_providerSupplierId_unitId_examModelI_key";

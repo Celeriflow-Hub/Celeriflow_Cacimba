@@ -1,0 +1,12 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { getTenantContextForModuleOperation } from "@/lib/platform/tenant-context";
+import { communicateSimplesDivergence, communicateSimplesExclusion, importSimplesBatch, prepareSimplesExclusion, processSimplesDivergences, rectifySimplesDivergence } from "@/lib/tributacao/s5-service";
+const path = "/tributacao/simples-nacional"; const done = (error?: unknown) => ({ error: error instanceof Error ? error.message : error ? "Não foi possível concluir a operação." : undefined });
+async function ctx(operation: "create"|"update") { return getTenantContextForModuleOperation("TRIBUTACAO", operation); } const actor=(context:Awaited<ReturnType<typeof ctx>>)=>({usuarioId:context.user.id,employeeId:context.user.employeeId});
+export async function importSimplesAction(input: Parameters<typeof importSimplesBatch>[2]) { try { const context=await ctx("create"); await importSimplesBatch(context.prisma,actor(context),input); revalidatePath(path); return done(); } catch(error){return done(error);} }
+export async function processSimplesAction(competence:string) { try { const context=await ctx("update"); const result=await processSimplesDivergences(context.prisma,actor(context),competence); revalidatePath(path); return {...done(),...result}; } catch(error){return {...done(error),processed:0,taxpayers:0};} }
+export async function communicateDivergenceAction(id:string) { try { const context=await ctx("update"); await communicateSimplesDivergence(context.prisma,actor(context),id); revalidatePath(path); return done(); } catch(error){return done(error);} }
+export async function rectifyDivergenceAction(input: Parameters<typeof rectifySimplesDivergence>[2]) { try { const context=await ctx("update"); await rectifySimplesDivergence(context.prisma,actor(context),input); revalidatePath(path); return done(); } catch(error){return done(error);} }
+export async function prepareExclusionAction(input: Parameters<typeof prepareSimplesExclusion>[2]) { try { const context=await ctx("create"); await prepareSimplesExclusion(context.prisma,actor(context),input); revalidatePath(path); return done(); } catch(error){return done(error);} }
+export async function communicateExclusionAction(id:string) { try { const context=await ctx("update"); await communicateSimplesExclusion(context.prisma,actor(context),id); revalidatePath(path); return done(); } catch(error){return done(error);} }

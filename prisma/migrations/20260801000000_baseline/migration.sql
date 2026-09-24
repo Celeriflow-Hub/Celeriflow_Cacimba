@@ -1,0 +1,2 @@
+-- Baseline do schema legado já existente no banco de produção.
+-- Esta migration é marcada como aplicada sem executar DDL.

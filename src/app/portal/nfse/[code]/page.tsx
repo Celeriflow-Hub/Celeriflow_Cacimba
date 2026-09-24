@@ -1,0 +1,9 @@
+import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+export default async function NfseAuthenticityPage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const invoice = await prisma.invoice.findUnique({ where: { verificationCode: code }, include: { provider: { include: { person: true, company: true } } } });
+  const fiscal = invoice ? await prisma.nfseInvoiceData.findUnique({ where: { invoiceId: invoice.id } }) : null;
+  if (!invoice || !fiscal) return <main className="mx-auto max-w-xl p-8"><h1 className="text-xl font-bold">NFS-e não localizada</h1><p className="mt-2 text-sm text-slate-600">Confira o código de verificação informado.</p></main>;
+  return <main className="mx-auto max-w-xl p-6"><section className="rounded-xl border bg-white p-6 shadow-sm"><p className="text-xs font-bold uppercase text-emerald-700">Documento localizado</p><h1 className="mt-1 text-2xl font-bold">NFS-e nº {invoice.invoiceNumber}</h1><dl className="mt-5 grid grid-cols-2 gap-4 text-sm"><div><dt className="text-slate-500">Situação</dt><dd className="font-semibold">{invoice.status}</dd></div><div><dt className="text-slate-500">Competência</dt><dd className="font-semibold">{invoice.competence}</dd></div><div><dt className="text-slate-500">Prestador</dt><dd className="font-semibold">{invoice.provider.company?.corporateName ?? invoice.provider.person?.fullName}</dd></div><div><dt className="text-slate-500">Valor do serviço</dt><dd className="font-semibold">R$ {Number(invoice.serviceValueDecimal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</dd></div><div><dt className="text-slate-500">ISS</dt><dd className="font-semibold">R$ {Number(invoice.issValueDecimal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</dd></div><div><dt className="text-slate-500">Código</dt><dd className="font-mono font-semibold">{invoice.verificationCode}</dd></div></dl></section></main>;
+}
