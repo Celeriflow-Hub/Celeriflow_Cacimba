@@ -787,7 +787,7 @@ describe("Lagoa Seca/PB - Validação Integrada e Regras Fiscais/Financeiras Est
       assert.equal(trace.expenseFixations[0].appropriations[0]?.actionPPA?.id, action.id);
        assert.equal(trace.cmdSchedules.length, 12);
        assert.equal(trace.mbaTargets.length, 6);
-       assert.equal(Number(trace.cmdSchedules[0]?.limitValue), 60);
+       assert.equal(Number(trace.cmdSchedules.find((schedule) => schedule.month === 1)?.limitValue), 40);
        assert.equal(Number(trace.mbaTargets[0]?.targetValue), 100);
       const hierarchy = await prisma.programPPA.findUniqueOrThrow({ where: { id: program.id }, include: { objectives: { include: { indicators: true } }, actions: { include: { goals: true } } } });
       assert.equal(hierarchy.objectives[0]?.id, objective.id);

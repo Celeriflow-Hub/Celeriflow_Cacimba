@@ -53,7 +53,7 @@ async function main() {
   })));
   const perfilContador = await prisma.configuracaoPerfil.findUniqueOrThrow({ where: { codigo: "CONTADOR" } });
 
-  await prisma.usuario.upsert({
+  const contadorPrefeitura = await prisma.usuario.upsert({
     where: { email: "contador.prefeitura@lagoaseca.pb.gov.br" },
     create: {
       email: "contador.prefeitura@lagoaseca.pb.gov.br",
@@ -82,7 +82,7 @@ async function main() {
   });
 
   // 4. Servidor Público
-  await prisma.employee.upsert({
+  const tesoureiro = await prisma.employee.upsert({
     where: { cpf: "111.222.333-44" },
     create: {
       name: "João da Silva - Tesoureiro",
@@ -91,6 +91,10 @@ async function main() {
       isActive: true,
     },
     update: { name: "João da Silva - Tesoureiro" },
+  });
+  await prisma.usuario.update({
+    where: { id: contadorPrefeitura.id },
+    data: { employeeId: tesoureiro.id },
   });
 
   // 5. Fontes de Recurso
@@ -480,7 +484,7 @@ async function main() {
   }
 
   // 12. Dotações Orçamentárias Segregadas por UG e alinhadas à LOA Fixada
-  await prisma.budgetAppropriation.upsert({
+  const dotacaoPrefeitura = await prisma.budgetAppropriation.upsert({
     where: { code: "0101.04.122.0001.2002.3.3.90.30.00" },
     create: {
       id: "dotacao-lagoaseca-pref-01",
@@ -550,6 +554,24 @@ async function main() {
       companyId: empresaTeste.id,
     },
     update: {},
+  });
+
+  await prisma.commitment.upsert({
+    where: { number: "EMP-SEED-LAGOA-SECA-001" },
+    create: {
+      number: "EMP-SEED-LAGOA-SECA-001",
+      date: new Date("2026-01-10T00:00:00.000Z"),
+      value: 1000,
+      valueDecimal: new Prisma.Decimal("1000.00"),
+      type: "Ordinário",
+      history: "Empenho base para homologação financeira",
+      appropriationId: dotacaoPrefeitura.id,
+      supplierId: fornecedorTeste.id,
+    },
+    update: {
+      appropriationId: dotacaoPrefeitura.id,
+      supplierId: fornecedorTeste.id,
+    },
   });
 
   // 14. Documento GED

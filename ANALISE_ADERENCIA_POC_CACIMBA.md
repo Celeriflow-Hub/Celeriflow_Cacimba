@@ -421,7 +421,8 @@ Também devem ser preparados os três canais de suporte solicitados para a POC: 
 ### Fase 0 — Base executável e inventário oficial
 
 - Validar o armazenamento Blob da instância de Cacimba.
-- Corrigir e validar a suíte de testes automatizados.
+- Suíte automatizada validada em schema Neon isolado: 242 testes unitários e 6 testes SIAFIC aprovados em 24/09/2026.
+- Build de produção aprovado em 24/09/2026.
 - Confirmar o texto oficial do edital e transformar cada item em caso de aceite.
 - Identificar e parametrizar todas as referências fixas de Divino.
 

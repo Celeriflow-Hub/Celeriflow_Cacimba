@@ -54,7 +54,7 @@ export const patientInputSchema = z.object({
   personId: z.string().trim().max(100, "Identificador da pessoa invalido.").default(""),
   cns: optionalText("CNS", 30),
   bloodType: optionalText("Tipo sanguineo", 10),
-  bloodDonor: z.union([z.boolean(), z.null(), z.undefined()]),
+  bloodDonor: z.boolean().nullable().optional().transform(value => value ?? null),
   referenceUnitId: optionalId(),
   teamId: optionalId(),
   fullName: optionalText("Nome completo", 200),

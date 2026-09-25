@@ -27,10 +27,11 @@ BEFORE UPDATE OR DELETE ON "AuditEvent"
 FOR EACH ROW EXECUTE FUNCTION prevent_audit_event_mutation();
 
 INSERT INTO "ConfiguracaoPerfil" (
-  "id", "nome", "descricao", "permissoes", "ativo", "createdAt", "updatedAt"
+  "id", "codigo", "nome", "descricao", "permissoes", "ativo", "createdAt", "updatedAt"
 )
 VALUES (
   'bootstrap-test-profile',
+  'BOOTSTRAP_TEST',
   'Bootstrap Test Profile',
   'Perfil tecnico exclusivo para validacao da auditoria.',
   '{}',

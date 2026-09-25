@@ -31,7 +31,9 @@ Situação atual:
 - `prisma migrate status` informa que o banco está atualizado;
 - `prisma migrate diff` não detecta diferença entre Neon e schema Prisma;
 - Prisma Client gerado com sucesso;
-- build de produção aprovado.
+- build de produção aprovado;
+- schema isolado `celeriflow_cacimba_test` sincronizado e carregado por `npm run bootstrap:test-db`;
+- suíte unitária aprovada com 242 testes e suíte SIAFIC aprovada com 6 testes.
 
 ### 2.1 Motivo do baseline próprio
 
@@ -400,15 +402,13 @@ Ainda não existem tabelas suficientes para reserva de medicamentos, alertas per
 
 ## 9. Próximas etapas do banco
 
-As etapas de limpeza, baseline, aplicação do schema, verificação de drift e geração do Prisma Client foram concluídas.
+As etapas de limpeza, baseline, aplicação do schema, verificação de drift, geração do Prisma Client, preparação do schema isolado de testes e estabilização da suíte automatizada foram concluídas.
 
 Ainda é necessário:
 
 1. Cadastrar a instância e a instituição de Cacimba.
 2. Cadastrar os módulos contratados e o primeiro administrador.
 3. Revisar e executar somente seeds adequados a Cacimba.
-4. Preparar um banco ou schema isolado para testes que gravam dados.
-5. Corrigir a suíte legada antes de adotá-la como critério de aceite.
-6. Validar o Blob com upload e leitura controlados.
+4. Validar o Blob com upload e leitura controlados.
 
 Para implantações futuras, o comando normal será `npx prisma migrate deploy`, utilizando o diretório configurado em `prisma.config.ts`.

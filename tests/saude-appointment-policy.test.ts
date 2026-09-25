@@ -49,8 +49,9 @@ test("exige motivo de cancelamento e normaliza valores opcionais", () => {
   );
   assert.deepEqual(
     patientInputSchema.parse({ personId: "", cns: "", bloodType: "", referenceUnitId: "", teamId: "", fullName: "", cpf: "", birthDate: "" }),
-    { personId: "", cns: null, bloodType: null, referenceUnitId: null, teamId: null, fullName: null, cpf: null, birthDate: null },
+    { personId: "", cns: null, bloodType: null, bloodDonor: null, referenceUnitId: null, teamId: null, fullName: null, cpf: null, birthDate: null },
   );
+  assert.equal(patientInputSchema.parse({ personId: "", cns: "", bloodType: "", bloodDonor: true, referenceUnitId: "", teamId: "", fullName: "", cpf: "", birthDate: "" }).bloodDonor, true);
 });
 
 test("valida limites basicos dos sinais vitais informados", () => {

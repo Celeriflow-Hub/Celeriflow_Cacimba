@@ -67,13 +67,15 @@ async function main() {
     },
     update: { status: "Aberto" },
   });
-  await bankIntegrationClient.checkSandboxHealth();
-  const integrationCheck = await bankIntegrationClient.fetchBankStatement(
-    { banco: bankName, agencia: agency, contaNumero: "20001-1" },
-    { periodoInicio: "2025-08-01", periodoFim: "2025-08-31" },
-  );
-  if (integrationCheck.items.length === 0) {
-    throw new Error("O Banco Virtual Robonuvem não retornou movimentações para a validação da POC.");
+  if (process.env.SKIP_BANK_SANDBOX_HEALTH_CHECK !== "true") {
+    await bankIntegrationClient.checkSandboxHealth();
+    const integrationCheck = await bankIntegrationClient.fetchBankStatement(
+      { banco: bankName, agencia: agency, contaNumero: "20001-1" },
+      { periodoInicio: "2025-08-01", periodoFim: "2025-08-31" },
+    );
+    if (integrationCheck.items.length === 0) {
+      throw new Error("O Banco Virtual Robonuvem não retornou movimentações para a validação da POC.");
+    }
   }
 
   const [budgetUnit, year2025] = await Promise.all([

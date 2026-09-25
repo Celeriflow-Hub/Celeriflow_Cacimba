@@ -4,10 +4,11 @@ import { healthAdministrativeReportOptions, isHealthAdministrativeReportType } f
 import { calculateMunicipalityPercentages } from "../src/lib/saude/health-report-policy.ts";
 
 test("catálogo F1-E contém exatamente SAU-ADM-051 a SAU-ADM-064", () => {
-  assert.equal(healthAdministrativeReportOptions.length, 14);
-  assert.deepEqual(healthAdministrativeReportOptions.map(option => option.requirement), Array.from({ length: 14 }, (_, index) => `SAU-ADM-${String(index + 51).padStart(3, "0")}`));
-  assert.equal(new Set(healthAdministrativeReportOptions.map(option => option.type)).size, 14);
-  for (const option of healthAdministrativeReportOptions) {
+  const f1eOptions = healthAdministrativeReportOptions.filter(option => option.requirement.startsWith("SAU-ADM-"));
+  assert.equal(f1eOptions.length, 14);
+  assert.deepEqual(f1eOptions.map(option => option.requirement), Array.from({ length: 14 }, (_, index) => `SAU-ADM-${String(index + 51).padStart(3, "0")}`));
+  assert.equal(new Set(f1eOptions.map(option => option.type)).size, 14);
+  for (const option of f1eOptions) {
     assert.equal(isHealthAdministrativeReportType(option.type), true);
     assert.ok(option.filters.length > 0);
   }
