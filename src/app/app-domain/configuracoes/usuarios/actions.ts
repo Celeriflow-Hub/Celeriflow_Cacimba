@@ -5,12 +5,13 @@ import { assertAdministratorLifecycleChange, isSystemAdministratorEmail, isSyste
 import { auditEventTypes, writeAuditEvent } from "@/lib/platform/audit-evidence";
 import { AccessError, getTenantContextForSystemAdministration } from "@/lib/platform/tenant-context";
 import { adminAuth } from "@/lib/firebase/server";
-import { createFirebaseUserProvisioner } from "@/lib/firebase/user-provisioning";
+import { createFirebaseUserProvisioner, isStrongFirebasePassword } from "@/lib/firebase/user-provisioning";
 
 export async function upsertUsuario(data: {
   id?: string;
   nome: string;
   email: string;
+  password?: string;
   perfilId: string;
   employeeId?: string;
   ativo: boolean;
@@ -33,6 +34,9 @@ export async function upsertUsuario(data: {
     if (data.id && !existing) return { error: "Usuário não encontrado." };
     if (existing && (isSystemAdministratorEmail(existing.email) || isSystemAdministratorProfileCode(existing.perfil.codigo))) {
       return { error: "A conta técnica do administrador do sistema não pode ser alterada nesta tela." };
+    }
+    if (!existing && !isStrongFirebasePassword(data.password || "")) {
+      return { error: "Informe uma senha com ao menos 8 caracteres, letra maiúscula, número e caractere especial." };
     }
     const duplicateEmailUser = await prisma.usuario.findUnique({ where: { email }, select: { id: true } });
     if (duplicateEmailUser && duplicateEmailUser.id !== existing?.id) return { error: "Já existe um usuário com este e-mail." };
@@ -73,6 +77,7 @@ export async function upsertUsuario(data: {
       displayName: data.nome.trim(),
       disabled: !data.ativo,
       firebaseUid: existing?.firebaseUid,
+      password: existing ? undefined : data.password,
     });
 
     await prisma.$transaction(async (tx) => {

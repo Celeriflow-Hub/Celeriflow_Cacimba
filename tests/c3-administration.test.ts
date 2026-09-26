@@ -11,7 +11,7 @@ import {
   resolveEmployeeHierarchy,
   SYSTEM_ADMIN_PROFILE_CODE,
 } from "../src/lib/administration/c3-policy";
-import { createFirebaseUserProvisioner } from "../src/lib/firebase/user-provisioning";
+import { createFirebaseUserProvisioner, isStrongFirebasePassword } from "../src/lib/firebase/user-provisioning";
 import { auditEventTypes, writeAuditEvent } from "../src/lib/platform/audit-evidence";
 
 test("institution identifiers are optional and validated only when supplied", () => {
@@ -42,7 +42,7 @@ test("lifecycle blockers prevent deactivation with active children or references
   assert.doesNotThrow(() => assertLifecycleCanDeactivate({ entity: "o departamento", activeChildrenOrReferences: 0 }));
 });
 
-test("Firebase provisioner coordinates creation, email, and lifecycle without a password", async () => {
+test("Firebase provisioner creates immediately usable password credentials", async () => {
   const calls: unknown[] = [];
   const provisioner = createFirebaseUserProvisioner({
     getUser: async () => ({ uid: "unused" }),
@@ -50,10 +50,12 @@ test("Firebase provisioner coordinates creation, email, and lifecycle without a 
     createUser: async (input) => { calls.push(input); return { uid: "firebase-1" }; },
     updateUser: async (uid, input) => { calls.push({ uid, ...input }); return { uid }; },
   });
-  assert.deepEqual(await provisioner.provision({ email: " USER@EXAMPLE.GOV.BR ", displayName: "User", disabled: false }), { firebaseUid: "firebase-1" });
-  assert.deepEqual(calls, [{ email: "user@example.gov.br", displayName: "User", disabled: false }]);
+  assert.equal(isStrongFirebasePassword("Password1!"), true);
+  assert.equal(isStrongFirebasePassword("password"), false);
+  assert.deepEqual(await provisioner.provision({ email: " USER@EXAMPLE.GOV.BR ", displayName: "User", disabled: false, password: "Password1!" }), { firebaseUid: "firebase-1" });
+  assert.deepEqual(calls, [{ email: "user@example.gov.br", displayName: "User", disabled: false, emailVerified: true, password: "Password1!" }]);
   await provisioner.provision({ email: "user@example.gov.br", displayName: "User Updated", disabled: true, firebaseUid: "firebase-1" });
-  assert.deepEqual(calls.at(-1), { uid: "firebase-1", email: "user@example.gov.br", displayName: "User Updated", disabled: true });
+  assert.deepEqual(calls.at(-1), { uid: "firebase-1", email: "user@example.gov.br", displayName: "User Updated", disabled: true, emailVerified: true });
 });
 
 test("administrative audit events persist stable identifiers and migration remains additive", async () => {

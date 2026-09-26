@@ -8,6 +8,7 @@ import { PageFrame } from "@/components/app-ui/PageFrame";
 import { PageHeader } from "@/components/app-ui/PageHeader";
 import { ErpListFrame } from "@/components/app-ui/erp/ErpListFrame";
 import { ErpPagination } from "@/components/app-ui/erp/ErpPagination";
+import { isStrongFirebasePassword } from "@/lib/firebase/user-provisioning";
 
 const PAGE_SIZE = 20;
 
@@ -52,6 +53,8 @@ export default function UsuariosClient({
     id?: string;
     nome: string;
     email: string;
+    password: string;
+    passwordConfirmation: string;
     perfilId: string;
     employeeId: string;
     ativo: boolean;
@@ -59,6 +62,8 @@ export default function UsuariosClient({
   }>({
     nome: "",
     email: "",
+    password: "",
+    passwordConfirmation: "",
     perfilId: perfis[0]?.id || "",
     employeeId: "",
     ativo: true,
@@ -79,6 +84,8 @@ export default function UsuariosClient({
     setFormData({
       nome: "",
       email: "",
+      password: "",
+      passwordConfirmation: "",
       perfilId: perfis[0]?.id || "",
       employeeId: "",
       ativo: true,
@@ -97,6 +104,8 @@ export default function UsuariosClient({
       id: usuario.id,
       nome: usuario.nome,
       email: usuario.email,
+      password: "",
+      passwordConfirmation: "",
       perfilId: usuario.perfilId,
       employeeId: usuario.employeeId || "",
       ativo: usuario.ativo,
@@ -107,6 +116,14 @@ export default function UsuariosClient({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!formData.id && !isStrongFirebasePassword(formData.password)) {
+      alert("Informe uma senha com ao menos 8 caracteres, letra maiúscula, número e caractere especial.");
+      return;
+    }
+    if (!formData.id && formData.password !== formData.passwordConfirmation) {
+      alert("A senha e a confirmação não coincidem.");
+      return;
+    }
     setIsSubmitting(true);
 
     const permissoesArray = Object.entries(formData.permissoes).map(([moduloId, perms]) => ({
@@ -119,6 +136,7 @@ export default function UsuariosClient({
       id: formData.id,
       nome: formData.nome,
       email: formData.email,
+      password: formData.id ? undefined : formData.password,
       perfilId: formData.perfilId,
       employeeId: formData.employeeId || undefined,
       ativo: formData.ativo,
@@ -265,6 +283,35 @@ export default function UsuariosClient({
                     className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none"
                   />
                 </div>
+                {!formData.id && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Senha de Acesso</label>
+                      <input
+                        required
+                        type="password"
+                        minLength={8}
+                        autoComplete="new-password"
+                        value={formData.password}
+                        onChange={e => setFormData({...formData, password: e.target.value})}
+                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Mínimo de 8 caracteres, com maiúscula, número e caractere especial.</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Senha</label>
+                      <input
+                        required
+                        type="password"
+                        minLength={8}
+                        autoComplete="new-password"
+                        value={formData.passwordConfirmation}
+                        onChange={e => setFormData({...formData, passwordConfirmation: e.target.value})}
+                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none"
+                      />
+                    </div>
+                  </>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Perfil de Acesso</label>
                   <select

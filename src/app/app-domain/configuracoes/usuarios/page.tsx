@@ -18,6 +18,7 @@ export default async function UsuariosPage() {
       orderBy: { nome: 'asc' }
     }),
     prisma.configuracaoPerfil.findMany({
+      where: { codigo: { not: SYSTEM_ADMIN_PROFILE_CODE } },
       orderBy: { nome: 'asc' }
     }),
     prisma.configuracaoModulo.findMany({
